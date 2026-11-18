@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add student · Face Recognition</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="enroll">
+<div class="wrap">
+  <header>
+    <h1>Face Recognition</h1>
+    <nav class="nav">
+      <a href="/" data-nav="students">Students</a>
+      <a href="/camera" data-nav="camera">Camera</a>
+      <a href="/enroll" data-nav="enroll">Add student</a>
+    </nav>
+    <span class="spacer"></span>
+    <button type="button" class="btn danger" id="quitBtn">Quit app</button>
+  </header>
+
+  <main>
+    <div class="stack">
+      <section class="card">
+        <div class="card-head">
+          <h2>Live camera</h2>
+          <div class="actions">
+            <span id="camPill" class="pill">Connecting…</span>
+            <button type="button" class="btn" id="camBtn">Stop camera</button>
+          </div>
+        </div>
+        <div class="video-wrap">
+          <div class="placeholder" id="placeholder">Waiting for the camera…</div>
+          <img id="feed" alt="Live camera feed" hidden>
+        </div>
+        <p class="muted" style="margin: 10px 0 0;">The camera needs to be on here so the new student's face can be captured. Start it with the button above.</p>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="card">
+        <div class="card-head"><h2>Add new student</h2></div>
+        <form id="enrollForm" autocomplete="off">
+          <label class="field" for="name">Full name</label>
+          <input type="text" id="name" maxlength="40" placeholder="e.g. Satyam Kumar">
+          <div class="grid-3">
+            <div>
+              <label class="field" for="className">Class</label>
+              <input type="text" id="className" maxlength="40" placeholder="e.g. 10-A">
+            </div>
+            <div>
+              <label class="field" for="year">Year</label>
+              <input type="text" id="year" maxlength="20" placeholder="e.g. 2026">
+            </div>
+            <div>
+              <label class="field" for="rollNo">Roll no</label>
+              <input type="text" id="rollNo" maxlength="20" placeholder="e.g. 12">
+            </div>
+          </div>
+          <label class="check"><input type="checkbox" id="replace"> Replace existing samples for this name</label>
+          <button class="btn primary" id="enrollBtn" type="submit">Capture and enroll</button>
+          <p id="enrollMsg" role="status"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="stopped" class="overlay" role="alert" hidden>
+  <div class="overlay-card">
+    <h2>App stopped</h2>
+    <p>The camera is released and the server has shut down. You can close this tab.</p>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

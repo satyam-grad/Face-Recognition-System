@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Camera · Face Recognition</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-page="camera">
+<div class="wrap">
+  <header>
+    <h1>Face Recognition</h1>
+    <nav class="nav">
+      <a href="/" data-nav="students">Students</a>
+      <a href="/camera" data-nav="camera">Camera</a>
+      <a href="/enroll" data-nav="enroll">Add student</a>
+    </nav>
+    <span class="spacer"></span>
+    <button type="button" class="btn danger" id="quitBtn">Quit app</button>
+  </header>
+
+  <main>
+    <div class="stack">
+      <section class="card">
+        <div class="card-head">
+          <h2>Live camera</h2>
+          <div class="actions">
+            <span id="camPill" class="pill">Connecting…</span>
+            <button type="button" class="btn" id="camBtn">Stop camera</button>
+          </div>
+        </div>
+        <div class="video-wrap">
+          <div class="placeholder" id="placeholder">Waiting for the camera…</div>
+          <img id="feed" alt="Live camera feed" hidden>
+        </div>
+        <div id="faces" class="chips" aria-live="polite"></div>
+        <p class="muted" style="margin: 10px 0 0;">Recognised students are marked present automatically (with a cooldown between entries).</p>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="card">
+        <div class="card-head">
+          <h2>Attendance log</h2>
+          <div class="actions">
+            <a class="btn" href="/api/attendance.csv" download>Download CSV</a>
+            <button type="button" class="btn danger" id="clearBtn">Clear log</button>
+          </div>
+        </div>
+        <p id="present" class="muted" style="margin: 0 0 12px;"></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Time</th></tr></thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="stopped" class="overlay" role="alert" hidden>
+  <div class="overlay-card">
+    <h2>App stopped</h2>
+    <p>The camera is released and the server has shut down. You can close this tab.</p>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

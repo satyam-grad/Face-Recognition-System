@@ -16,6 +16,7 @@ from pathlib import Path
 import cv2
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
@@ -140,6 +141,13 @@ class AttendanceLog:
     def all_rows(self):
         with self._connect() as conn:
             return conn.execute("SELECT name, ts FROM attendance ORDER BY id ASC").fetchall()
+
+    def rows_for(self, name):
+        """All check-in timestamps for one person, newest first."""
+        with self._connect() as conn:
+            return conn.execute(
+                "SELECT ts FROM attendance WHERE name = ? ORDER BY id DESC", (name,)
+            ).fetchall()
 
     def clear(self):
         with self._connect() as conn:
@@ -344,6 +352,7 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Face Recognition", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 def require_fetch(request: Request):
@@ -358,6 +367,9 @@ guard = [Depends(require_fetch)]
 
 class EnrollRequest(BaseModel):
     name: str
+    class_name: str = ""
+    year: str = ""
+    roll_no: str = ""
     replace: bool = False
 
 
@@ -368,9 +380,26 @@ def _clean_name(raw):
     return name
 
 
+def _clean_field(raw, label, limit=40):
+    field = " ".join((raw or "").split())
+    if len(field) > limit:
+        raise HTTPException(422, f"{label} must be at most {limit} characters.")
+    return field
+
+
 @app.get("/")
 def index():
-    return FileResponse(STATIC_DIR / "index.html")
+    return FileResponse(STATIC_DIR / "students.html")
+
+
+@app.get("/camera")
+def camera_page():
+    return FileResponse(STATIC_DIR / "camera.html")
+
+
+@app.get("/enroll")
+def enroll_page():
+    return FileResponse(STATIC_DIR / "enroll.html")
 
 
 _server = None  
@@ -448,6 +477,9 @@ def people():
 @app.post("/api/enroll", dependencies=guard)
 def enroll(req: EnrollRequest):
     name = _clean_name(req.name)
+    class_name = _clean_field(req.class_name, "Class")
+    year = _clean_field(req.year, "Year")
+    roll_no = _clean_field(req.roll_no, "Roll no")
     if not worker.camera_enabled:
         raise HTTPException(409, "The camera is off. Start the camera first.")
     if worker.current_error or worker.raw_frame is None:
@@ -462,6 +494,7 @@ def enroll(req: EnrollRequest):
         if not worker.camera_enabled:
             raise HTTPException(409, "The camera was turned off during enrollment.")
         raise HTTPException(422, "No single clear face found. Face the camera alone, in good light, and try again.")
+    worker.db.upsert_student(name, class_name, year, roll_no)
     return {"name": name, "enrolled": count}
 
 
@@ -470,8 +503,36 @@ def delete_person(name: str):
     if name not in [n for n, _ in worker.db.list_people()]:
         raise HTTPException(404, f"{name} is not enrolled.")
     worker.db.delete_face(name)
+    worker.db.delete_student(name)
     worker.reload()
     return {"deleted": name}
+
+
+# students
+@app.get("/api/students")
+def students():
+    return worker.db.list_students()
+
+
+@app.get("/api/students/{name}")
+def student_detail(name: str):
+    if name not in [n for n, _ in worker.db.list_people()]:
+        raise HTTPException(404, f"{name} is not enrolled.")
+    s = worker.db.get_student(name) or {"name": name, "class_name": "", "year": "", "roll_no": ""}
+    entries = [r[0] for r in worker.attendance.rows_for(name)]
+    dates = sorted({ts[:10] for ts in entries}, reverse=True)
+    today = datetime.now().strftime("%Y-%m-%d")
+    return {
+        "name": name,
+        "class_name": s["class_name"],
+        "year": s["year"],
+        "roll_no": s["roll_no"],
+        "present_today": today in dates,
+        "days_present": dates,
+        "total_checkins": len(entries),
+        "entries": entries[:30],
+        "entries_hidden": max(0, len(entries) - 30),
+    }
 
 
 # attendance
