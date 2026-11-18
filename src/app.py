@@ -59,7 +59,14 @@ else:
     VIDEO_SOURCE = _src
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+PHOTOS_DIR = Path(config.DB_PATH).parent / "photos"   # one snapshot per enrolled student
 NAME_RE = re.compile(r"^[\w .\-]{1,40}$")
+
+
+def photo_path(name):
+    """Stable file name for a student's snapshot photo."""
+    slug = re.sub(r"[^A-Za-z0-9._-]", "_", name).strip("_") or "student"
+    return PHOTOS_DIR / (slug + ".jpg")
 
 
 class AttendanceLog:
@@ -320,6 +327,7 @@ class RecognitionWorker:
         """Grab up to `shots` frames that contain exactly one face and store their encodings."""
         collected = []
         deadline = time.time() + timeout
+        photo_saved = False
         while (len(collected) < shots and time.time() < deadline
                and self.camera_enabled and not self.stopped):
             with self.frame_lock:
@@ -329,6 +337,13 @@ class RecognitionWorker:
                     locations = self.detector.detect_faces(frame)  # full-res, like enroll.py
                     if len(locations) == 1:
                         collected.extend(self.encoder.encode_faces(frame, locations))
+                        # keep one snapshot so the UI can show the student's face later
+                        if not photo_saved:
+                            ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                            if ok:
+                                PHOTOS_DIR.mkdir(parents=True, exist_ok=True)
+                                photo_path(name).write_bytes(buf.tobytes())
+                                photo_saved = True
             time.sleep(0.4)
 
         if not collected:
@@ -498,12 +513,21 @@ def enroll(req: EnrollRequest):
     return {"name": name, "enrolled": count}
 
 
+@app.get("/api/people/{name}/photo")
+def person_photo(name: str):
+    p = photo_path(name)
+    if not p.exists():
+        raise HTTPException(404, "No photo stored for this student.")
+    return FileResponse(p, media_type="image/jpeg")
+
+
 @app.delete("/api/people/{name}", dependencies=guard)
 def delete_person(name: str):
     if name not in [n for n, _ in worker.db.list_people()]:
         raise HTTPException(404, f"{name} is not enrolled.")
     worker.db.delete_face(name)
     worker.db.delete_student(name)
+    photo_path(name).unlink(missing_ok=True)
     worker.reload()
     return {"deleted": name}
 

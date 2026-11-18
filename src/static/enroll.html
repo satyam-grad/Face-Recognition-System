@@ -7,9 +7,11 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body data-page="enroll">
-<div class="wrap">
-  <header>
-    <h1>Face Recognition</h1>
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Face Recognition</h1>
+      <span class="sub">Attendance system</span>
+    </div>
     <nav class="nav">
       <a href="/" data-nav="students">Students</a>
       <a href="/camera" data-nav="camera">Camera</a>
@@ -17,9 +19,9 @@
     </nav>
     <span class="spacer"></span>
     <button type="button" class="btn danger" id="quitBtn">Quit app</button>
-  </header>
+  </aside>
 
-  <main>
+  <main class="content split">
     <div class="stack">
       <section class="card">
         <div class="card-head">
@@ -33,46 +35,54 @@
           <div class="placeholder" id="placeholder">Waiting for the camera…</div>
           <img id="feed" alt="Live camera feed" hidden>
         </div>
-        <p class="muted" style="margin: 10px 0 0;">The camera needs to be on here so the new student's face can be captured. Start it with the button above.</p>
+        <p class="muted" style="margin: 10px 0 0;">Start the camera, then submit the form — the student's face and a snapshot photo are captured from this feed.</p>
       </section>
     </div>
 
     <div class="stack">
-      <section class="card">
+      <section class="card enroll-card">
         <div class="card-head"><h2>Add new student</h2></div>
         <form id="enrollForm" autocomplete="off">
-          <label class="field" for="name">Full name</label>
-          <input type="text" id="name" maxlength="40" placeholder="e.g. Satyam Kumar">
-          <div class="grid-3">
-            <div>
-              <label class="field" for="className">Class</label>
-              <input type="text" id="className" maxlength="40" placeholder="e.g. 10-A">
+          <div class="field-row">
+            <label class="field" for="name">Full name</label>
+            <input type="text" id="name" maxlength="40" placeholder="e.g. Satyam Kumar">
+          </div>
+          <div class="form-grid">
+            <div class="wide">
+              <label class="field" for="className">Class / Section</label>
+              <input type="text" id="className" maxlength="40" placeholder="e.g. CSE 3-A">
             </div>
             <div>
-              <label class="field" for="year">Year</label>
-              <input type="text" id="year" maxlength="20" placeholder="e.g. 2026">
+              <label class="field" for="year">College year</label>
+              <select id="year">
+                <option value="">Select…</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="5th Year">5th Year</option>
+              </select>
             </div>
             <div>
-              <label class="field" for="rollNo">Roll no</label>
-              <input type="text" id="rollNo" maxlength="20" placeholder="e.g. 12">
+              <label class="field" for="rollNo">University roll no</label>
+              <input type="text" id="rollNo" maxlength="30" placeholder="e.g. 2301010123">
             </div>
           </div>
-          <label class="check"><input type="checkbox" id="replace"> Replace existing samples for this name</label>
+          <label class="check"><input type="checkbox" id="replace"> Replace existing samples if this student is already enrolled</label>
           <button class="btn primary" id="enrollBtn" type="submit">Capture and enroll</button>
           <p id="enrollMsg" role="status"></p>
         </form>
       </section>
     </div>
   </main>
-</div>
 
-<div id="stopped" class="overlay" role="alert" hidden>
-  <div class="overlay-card">
-    <h2>App stopped</h2>
-    <p>The camera is released and the server has shut down. You can close this tab.</p>
+  <div id="stopped" class="overlay" role="alert" hidden>
+    <div class="overlay-card">
+      <h2>App stopped</h2>
+      <p>The camera is released and the server has shut down. You can close this tab.</p>
+    </div>
   </div>
-</div>
 
-<script src="/static/app.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>

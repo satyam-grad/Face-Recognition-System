@@ -7,9 +7,11 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body data-page="camera">
-<div class="wrap">
-  <header>
-    <h1>Face Recognition</h1>
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Face Recognition</h1>
+      <span class="sub">Attendance system</span>
+    </div>
     <nav class="nav">
       <a href="/" data-nav="students">Students</a>
       <a href="/camera" data-nav="camera">Camera</a>
@@ -17,9 +19,9 @@
     </nav>
     <span class="spacer"></span>
     <button type="button" class="btn danger" id="quitBtn">Quit app</button>
-  </header>
+  </aside>
 
-  <main>
+  <main class="content split">
     <div class="stack">
       <section class="card">
         <div class="card-head">
@@ -33,12 +35,21 @@
           <div class="placeholder" id="placeholder">Waiting for the camera…</div>
           <img id="feed" alt="Live camera feed" hidden>
         </div>
-        <div id="faces" class="chips" aria-live="polite"></div>
-        <p class="muted" style="margin: 10px 0 0;">Recognised students are marked present automatically (with a cooldown between entries).</p>
+        <p class="muted" style="margin: 10px 0 0;">Recognized students are marked present automatically (with a cooldown between entries).</p>
       </section>
     </div>
 
     <div class="stack">
+      <section class="card">
+        <div class="card-head">
+          <h2>Recognized student</h2>
+          <span id="recogPill" class="pill">Scanning…</span>
+        </div>
+        <div id="recogBody">
+          <span class="muted">No recognized student in view right now.</span>
+        </div>
+      </section>
+
       <section class="card">
         <div class="card-head">
           <h2>Attendance log</h2>
@@ -57,15 +68,14 @@
       </section>
     </div>
   </main>
-</div>
 
-<div id="stopped" class="overlay" role="alert" hidden>
-  <div class="overlay-card">
-    <h2>App stopped</h2>
-    <p>The camera is released and the server has shut down. You can close this tab.</p>
+  <div id="stopped" class="overlay" role="alert" hidden>
+    <div class="overlay-card">
+      <h2>App stopped</h2>
+      <p>The camera is released and the server has shut down. You can close this tab.</p>
+    </div>
   </div>
-</div>
 
-<script src="/static/app.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>
